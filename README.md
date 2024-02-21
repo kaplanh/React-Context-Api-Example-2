@@ -284,21 +284,22 @@ export default AppRouter;
 -   Private Router
 
 ```jsx
-//router/PrivateRouter
+//PrivateRouter.jsx
 
-import React from "react";
-import { Navigate, Outlet } from "react-router-dom";
+import { Outlet, Navigate } from "react-router-dom";
+import { useLoginContext } from "../context/LoginProvider";
 
-//? Navigate componenti sayfada gorulmeyen ve programsal olarak bir linkin
-//? bir baska linke yonledirilmesi icin kullanilabilir. (v5 -> Redirect)
-//? Navigate, Component seviyesi Routing icin kullanilir.
-
-const PrivateRouter = ({ user }) => {
-  // const user = true;
-  return user ? <Outlet /> : <Navigate to="/login" />;
+const PrivateRouter = () => {
+    const { user } = useLoginContext();
+    return user?.email && user?.password ? (
+        <Outlet />
+    ) : (
+        <Navigate to="/login" />
+    );
 };
 
 export default PrivateRouter;
+
 
 ```
 
@@ -306,242 +307,70 @@ export default PrivateRouter;
 
     ```jsx
     //Nav.jsx
-        import { NavLink } from "react-router-dom";
-        import logo from "../img/logo.png";
-        
-        function Nav({ user, setUser }) {
-            return (
-        <nav className="navbar navbar-expand-md navbar-light">
-            <div className="container-fluid">
-                <NavLink to="/" className="navbar-brand">
-                    <img src={logo} alt="" />
-                </NavLink>
-                <button
-                    className="navbar-toggler"
-                    type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#navbarSupportedContent"
-                >
-                    <span className="navbar-toggler-icon"></span>
-                </button>
-                <div
-                    className="collapse navbar-collapse"
-                    id="navbarSupportedContent"
-                >
-                    <ul className="navbar-nav ms-auto mb-2 me-3 mb-lg-0">
-                        <li className="nav-item">
-                            <NavLink
-                                to="/"
-                                className="nav-link active"
-                                aria-current="page"
-                            >
-                                Home
-                            </NavLink>
-                        </li>
+    import { Link } from "react-router-dom";
+    import Container from "react-bootstrap/Container";
+    import Nav from "react-bootstrap/Nav";
+    import Navbar from "react-bootstrap/Navbar";
+    import Image from "react-bootstrap/Image";
+    
+    import { useLoginContext } from "../context/LoginProvider";
+    
+    function Navs() {
+        // ! Consuming login context
+        const { user, setUser } = useLoginContext();
 
-                        <li className="nav-item">
-                            <NavLink
-                                to="/people"
-                                className="nav-link"
-                                aria-current="page"
-                            >
-                                People
-                            </NavLink>
-                        </li>
+    return (
+        <Navbar expand="md">
+            <Container>
+                <Navbar.Brand>
+                    <Link className="nav-link" to="/">
+                        <Image
+                            width={"200px"}
+                            src="https://clarusway.com/wp-content/uploads/2022/02/Adsiz-tasarim-4-1024x265.png"
+                            alt="logo"
+                        />
+                    </Link>
+                </Navbar.Brand>
+                <Navbar.Toggle aria-controls="basic-navbar-nav" />
+                <Navbar.Collapse id="basic-navbar-nav">
+                    <Nav className="ms-auto">
+                        <Link className="nav-link" to="/">
+                            Home
+                        </Link>
+                        <Link className="nav-link" to="/about">
+                            About
+                        </Link>
+                        <Link className="nav-link" to="/people">
+                            People
+                        </Link>
 
-                        <li className="nav-item">
-                            <NavLink
-                                to="/paths"
+                        {user?.email && user?.password ? (
+                            <Link
                                 className="nav-link"
-                                aria-current="page"
+                                to="/login"
+                                onClick={() =>
+                                    setUser({ email: "", password: "" })
+                                }
                             >
-                                Paths
-                            </NavLink>
-                        </li>
-                        <li className="nav-item">
-                            <NavLink
-                                to="/contact"
-                                className="nav-link"
-                                aria-current="page"
-                            >
-                                Contact
-                            </NavLink>
-                        </li>
-                        <li className="nav-item">
-                            {user ? (
-                                <NavLink
-                                    to="/"
-                                    className="nav-link"
-                                    aria-current="page"
-                                    onClick={() => setUser(false)}
-                                >
-                                    Logout
-                                </NavLink>
-                            ) : (
-                                <NavLink
-                                    to="/login"
-                                    className="nav-link"
-                                    aria-current="page"
-                                >
-                                    Login
-                                </NavLink>
-                            )}
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
+                                Logout
+                            </Link>
+                        ) : (
+                            <Link className="nav-link" to="/login">
+                                Login
+                            </Link>
+                        )}
+                    </Nav>
+                </Navbar.Collapse>
+            </Container>
+        </Navbar>
     );
    }
 
-   export default Nav;
+   export default Navs;
+
 
 
     ```
-
-- useNavigate & useParams & useLocaation
-
-```jsx
-//People.jsx
-
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-
-const People = () => {
-    const [people, setPeople] = useState([]);
-    let navigate=useNavigate()
-
-    const getPeople = () => {
-        fetch("https://reqres.in/api/users")
-            .then((res) => res.json())
-            .then((data) => setPeople(data.data))
-            .catch((err) => console.log(err));
-    };
-    useEffect(() => {
-        getPeople();
-    }, []);
-
-    return (
-        <div className="container text-center mt-4">
-            <h1>PEOPLE LIST</h1>
-            <div className="row justify-content-center g-3">
-                {people?.map((person) => {
-                    const { id, first_name, last_name, avatar } = person;
-                    return (
-                        <div
-                            key={id}
-                            className=" col-sm-12 col-md-6 col-lg-4"
-                            type="button"
-                            onClick={() => navigate(`${id}`, { state: person })}
-                        >
-                            <img className="rounded" src={avatar} alt="img" />
-                            <h6>
-                                {first_name} {last_name}
-                            </h6>
-                        </div>
-                    );
-                })}
-            </div>
-        </div>
-    );
-};
-
-export default People;
-
-
-
-//PeopleDetails.jsx
-import React, { useEffect, useState } from "react";
-// import { useLocation} from "react-router-dom";
-import {useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
-import NotFound from "./NotFound";
-import spinner from "../img/Spinner-2.gif";
-
-const PersonDetail = () => {
-    //! navigate ile gonderilen state'i yakalamak icin useLocation Hook'u kullanilabilir.
-    //! Bu durumda veri, state ile geldigi icin yeniden fetch yapilmasina gerek kalmaz
-    // let { state: person } = useLocation();
-    let navigate = useNavigate();
-    // console.log(person);
-    //! Linkteki parametreyi almak icin useParams Hook'u kullanilabilir.
-    let { id } = useParams();
-    // console.log({ id });
-    const [person, setPerson] = useState({});
-    const [error, setError] = useState(false);
-    const [loading, setLoading] = useState(true);
-    // const getPerson = () => {
-    //     axios(`https://reqres.in/api/users/${id}`)
-    //         .then((res) => setPerson(res.data.data))
-    //         .catch((err) => {
-    //             setError(true);
-    //             console.log(err);
-    //         })
-    //         .finally(() => setLoading(false));
-    // };
-    // useEffect(() => {
-    //     getPerson();
-    //     // eslint-disable-next-line
-    //     // !warningden kurtulmak icin ya bunu ekleyebilirsin yada 2.yol seklinde yazabilirsin
-    // }, []);
-    
-    // !2.yol id her degistiginde getPerson fonk calistir
-
-    useEffect(() => {
-        const getPerson = () => {
-            axios(`https://reqres.in/api/users/${id}`)
-                .then((res) => setPerson(res.data.data))
-                .catch((err) => {
-                    setError(true);
-                    console.log(err);
-                })
-                .finally(() => setLoading(false));
-        };
-        getPerson();
-    }, [id]);
-
-    if (error) {
-        return <NotFound />;
-    } else if (loading) {
-        return (
-            <div className="text-center mt-4">
-                <img src={spinner} alt="spinner" />
-            </div>
-        );
-    }
-
-    return (
-        <div className="container text-center">
-            <h3>
-                {person?.first_name} {person?.last_name}
-            </h3>
-            <img className="rounded" src={person?.avatar} alt="" />
-            <p>{person?.email}</p>
-            <div>
-                <button
-                    onClick={() => navigate("/")}
-                    className="btn btn-success me-2"
-                >
-                    Go Home
-                </button>
-                <button
-                    onClick={() => navigate(-1)}
-                    className="btn btn-warning"
-                >
-                    Go Back
-                </button>
-            </div>
-        </div>
-    );
-};
-
-export default PersonDetail;
-
-
-
-```
-
-- NavLink  & Link & useNavigate() & Navigate
 
 -   Semantic Commit Messages
     See how a minor change to your commit message style can make you a better programmer.
