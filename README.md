@@ -10,14 +10,15 @@
 
 | **What's used in this app ?**                                                           | **How use third party libraries** | **Author**                                                                       |
 | --------------------------------------------------------------------------------------- | --------------------------------- | -------------------------------------------------------------------------------- |
-| [React-Router-Dom](https://reactrouter.com/en/main/start/overview)                      | npm i / yarn add react-router-dom | [Take a look at my portfolio](https://kaplanh.github.io/Portfolio_with_CssFlex/) |
-| [useEfect() Hook componentDidUpdate()](https://react.dev/learn#using-hooks)             |                                   | [Visit me on Linkedin](https://www.linkedin.com/in/kaplan-h/)                    |
+| [useContext()/Context APi](https://react.dev/reference/react/useContext)                      | npm i / yarn add react-router-dom | [Take a look at my portfolio](https://kaplanh.github.io/Portfolio_with_CssFlex/) |
+| [React-Router-Dom](https://reactrouter.com/en/main/start/overview)                      | npm i / yarn add react-router-dom |[Visit me on Linkedin](https://www.linkedin.com/in/kaplan-h/)   |
+| [useEfect() Hook componentDidUpdate()](https://react.dev/learn#using-hooks)             |                                   |                    |
 | [useState() Hook](https://react.dev/learn#using-hooks)                                  |                                   |                                                                                  |
-| [CRUD OPERATIONS with axios API](https://www.npmjs.com/package/axios#axios-api)         | npm i/yarn add axios              |                                                                                  |
+| [fetch API](https://www.npmjs.com/package/react-fetch)         | npm i/yarn add fetch              |                                                                                  |
 | [react-events](https://react.dev/learn#responding-to-events)                            |                                   |                                                                                  |
 | [Bootstrap](https://getbootstrap.com/docs/5.3/getting-started/introduction/)            | npm i / yarn add bootstrap        |                                                                                  |
 | [React-icons](https://react-icons.github.io/react-icons/)                               | npm i / yarn add react-icons      |                                                                                  |
-|  [lifting state up](https://react.dev/learn/sharing-state-between-components)              |                                   |                                                                                  |
+| [lifting state up](https://react.dev/learn/sharing-state-between-components)              |                                   |                                                                                  |
 | [props-drilling](https://react.dev/learn#sharing-data-between-components)               |                                   |                                                                                  |
 | [Semantic-Commits](https://gist.github.com/joshbuchea/6f47e86d2510bce28f8e7f42ae84c716) |                                   |                                                                                  |
 | Deploy with [Vercel](https://vercel.com/kaplanh)                                        |                                   |                                                                                  |
@@ -91,39 +92,31 @@ OR
 ## Project Skeleton
 
 ```
- react-router-dom-example(folder)
+ React-Context-Api-example(folder)
 |
 |----public (folder)
 │     └── index.html
 |----src (folder)
 |    |--- components (folder)
-│    │       ├── About.jsx
 │    │       ├── Courses.jsx
 │    │       ├── Footer.jsx
-│    │       ├── Nav.jsx
+│    │       ├── Navs.jsx
 │    │
 |    |--- img (folder)
 │    │
 │    |--- pages (folder)
-|    |      ├── Aws.jsx
-|    |      ├── Contact.jsx
-|    |      ├── Fulstack.jsx
+|    |      ├── About.jsx
 |    |      ├── Home.jsx
 |    |      ├── Logın.jsx
-|    |      ├── Next.jsx
-|    |      ├── NotFound.jsx
-|    |      ├── Paths.jsx
 |    |      ├── People.jsx
 |    |      ├── PersonDetaıl.jsx
-|    |      ├── React.jsx
+|    |      ├── PrivateRouter.jsx
 |    |
-|    |--- router (folder)
-│    │       ├── AppRouter.jsx
-│    │       ├── PrivateRouter.jsx
+|    |--- context (folder)
+│    │       ├── LoginProvider.jsx
 |    |
 |    |
 │    ├--- App.js
-│    ├--- data.js.js
 │    |--- index.js
 │    |--- index.css
 │
@@ -141,90 +134,94 @@ OR
 
 ### At the end of the project, the following topics are to be covered;
 
-- React-Router-Dom
+- useContext()/ Context Api
 
 ```jsx
-//index.jsx
-import React from "react";
-import ReactDOM from "react-dom/client";
-import App from "./App";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "./index.css";
-import { BrowserRouter } from "react-router-dom";
+//! 1.Adim
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(
-    <React.StrictMode>
-        <BrowserRouter>
-            <App />
-        </BrowserRouter>
-    </React.StrictMode>
-);
+//context/LoginProvider.jsx
+import { createContext, useState, useContext } from "react";
 
+//! 1- Login Context'i olusuturuldu
+const LoginContext = createContext();
+
+//! 2-Sarmalayici (Provider) Component
+const LoginProvider = ({ children }) => {
+    // //! Local State
+    const [user, setUser] = useState({ email: "", password: "" });
+
+    const values = {
+        user,
+        setUser,
+    };
+
+    return (
+        <LoginContext.Provider value={values}>{children}</LoginContext.Provider>
+    );
+};
+
+//! 3- consuming custom hook
+export const useLoginContext = () => {
+    return useContext(LoginContext);
+};
+
+export default LoginProvider;
+
+
+//! 2.adim
 //App.jsx
-import AppRouter from "./router/AppRouter";
+
+import Footer from "./components/Footer";
+import Navs from "./components/Navs";
+import About from "./pages/About";
+import Home from "./pages/Home";
+import People from "./pages/People";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import PersonDetail from "./pages/PersonDetail";
+import Login from "./pages/Login";
+import LoginProvider from "./context/LoginProvider";
+import PrivateRouter from "./pages/PrivateRouter";
 
 function App() {
     return (
-        <>
-            <AppRouter />
-            
-        </>
+        <LoginProvider>
+            <BrowserRouter>
+                <Navs />
+                <Routes>
+                    <Route index element={<Home />} />
+                    <Route path="about" element={<About />} />
+                    <Route path="login" element={<Login />} />
+
+                    <Route path="people" element={<PrivateRouter />}>
+                        <Route path="" element={<People />} />
+                        <Route path=":id" element={<PersonDetail />} />
+                    </Route>
+
+                    <Route path="*" element={<Navigate to="/" />} />
+                </Routes>
+                <Footer />
+            </BrowserRouter>
+        </LoginProvider>
     );
 }
 
 export default App;
 
+//! 3.adim
 
-//router/AppRouter.jsx
-import Nav from "../components/Nav";
-import { Route, Routes } from "react-router-dom";
-import Home from "../pages/Home";
-import Paths from "../pages/Paths";
-import People from "../pages/People";
-import PersonDetail from "../pages/PersonDetail";
-import Contact from "../pages/Contact";
-import NotFound from "../pages/NotFound";
-import Footer from "../components/Footer";
-import Fullstack from "../pages/Fullstack";
-import Aws from "../pages/Aws";
-import Next from "../pages/Next";
-import React from "../pages/React";
-import PrivateRouter from "./PrivateRouter";
-import Login from "../pages/Login";
-import { useState } from "react";
+import { Outlet, Navigate } from "react-router-dom";
+import { useLoginContext } from "../context/LoginProvider";
 
-const AppRouter = () => {
-    const [user, setUser] = useState(
-        JSON.parse(sessionStorage.getItem("user")) || false
-    );
-    return (
-        <div>
-            <Nav user={user} setUser={setUser} />
-            <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/paths" element={<Paths />}>
-                    <Route index element={<Fullstack />} />
-                    <Route path="fullstack" element={<Fullstack />}>
-                        <Route index element={<React />} />
-                        <Route path="next" element={<Next />} />
-                    </Route>
-                    <Route path="aws" element={<Aws />} />
-                </Route>
-                <Route element={<PrivateRouter user={user} />}>
-                    <Route path="/people" element={<People />} />
-                    <Route path="/people/:id" element={<PersonDetail />} />
-                </Route>
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/login" element={<Login setUser={setUser} />} />
-                <Route path="*" element={<NotFound />} />
-            </Routes>
-            <Footer />
-        </div>
+const PrivateRouter = () => {
+    const { user } = useLoginContext();
+    return user?.email && user?.password ? (
+        <Outlet />
+    ) : (
+        <Navigate to="/login" />
     );
 };
 
-export default AppRouter;
+export default PrivateRouter;
 
 
 ```
