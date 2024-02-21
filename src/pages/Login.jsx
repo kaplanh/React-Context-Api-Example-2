@@ -1,4 +1,4 @@
-import { useContext } from "react";
+
 import Container from "react-bootstrap/Container";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
@@ -16,15 +16,8 @@ const Login = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-<<<<<<< HEAD
         navigate(-1);
         // setUser({ email: "", password: "" })
-=======
-        setUser({ email, password });
-        sessionStorage.setItem("user", JSON.stringify({ email, password }));
-        navigate(-1);
-        // console.log(email, password);
->>>>>>> fb1d8df05829e754610fd348dc2c3f8740211fc4
     };
 
     return (
